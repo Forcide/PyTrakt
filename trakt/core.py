@@ -145,6 +145,8 @@ def oauth_auth(username, client_id=None, client_secret=None, store=False,
     :param store: Boolean flag used to determine if your trakt api auth data
         should be stored locally on the system. Default is :const:`False` for
         the security conscious
+    :param oauth_pin: To provide an OAuth PIN in advance. Leave empty to use
+        terminal authentication
     :return: Your OAuth access token
     """
     global CLIENT_ID, CLIENT_SECRET, OAUTH_TOKEN
