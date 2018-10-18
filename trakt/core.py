@@ -134,7 +134,8 @@ def pin_auth(pin=None, client_id=None, client_secret=None, store=False):
     return OAUTH_TOKEN
 
 
-def oauth_auth(username, client_id=None, client_secret=None, store=False):
+def oauth_auth(username, client_id=None, client_secret=None, store=False,
+               oauth_pin=None):
     """Generate an access_token to allow your application to authenticate via
     OAuth
 
@@ -152,27 +153,30 @@ def oauth_auth(username, client_id=None, client_secret=None, store=False):
     CLIENT_ID, CLIENT_SECRET = client_id, client_secret
     HEADERS['trakt-api-key'] = CLIENT_ID
 
-    authorization_base_url = urljoin(BASE_URL, '/oauth/authorize')
     token_url = urljoin(BASE_URL, '/oauth/token')
 
     # OAuth endpoints given in the API documentation
     oauth = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI, state=None)
 
-    # Redirect user to Trakt for authorization
-    authorization_url, _ = oauth.authorization_url(authorization_base_url,
-                                                   username=username)
-    print('Please go here and authorize,', authorization_url)
+    if oauth_pin is None:
+        # Redirect user to Trakt for authorization
+        authorization_base_url = urljoin(BASE_URL, '/oauth/authorize')
+        authorization_url, _ = oauth.authorization_url(authorization_base_url,
+                                                       username=username)
+        print('Please go here and authorize,', authorization_url)
 
-    # Get the authorization verifier code from the callback url
-    response = six.moves.input('Paste the Code returned here: ')
+        # Get the authorization verifier code from the callback url
+        response = six.moves.input('Paste the Code returned here: ')
+        oauth_pin = response
+
     # Fetch, assign, and return the access token
-    oauth.fetch_token(token_url, client_secret=CLIENT_SECRET, code=response)
+    oauth.fetch_token(token_url, client_secret=CLIENT_SECRET, code=oauth_pin)
     OAUTH_TOKEN = oauth.token['access_token']
 
     if store:
         _store(CLIENT_ID=CLIENT_ID, CLIENT_SECRET=CLIENT_SECRET,
                OAUTH_TOKEN=OAUTH_TOKEN)
-    return oauth.token['access_token']
+    return OAUTH_TOKEN
 
 
 def get_device_code(client_id=None, client_secret=None):
